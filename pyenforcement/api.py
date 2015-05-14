@@ -27,9 +27,6 @@ class Enforcement():
 			'customerKey': self.key,
 			'limit': 1,
 			}
-		headers = {
-			'Content-Type': 'application/json',
-			}
 
 		if kwargs is not None:
 			# merge the passed parameters with the default
@@ -59,9 +56,6 @@ class Enforcement():
 		auth_params = {
 			'customerKey': self.key,
 			}
-		headers = {
-			'Content-Type': 'application/json',
-			}
 
 		if kwargs is not None and type(data) == type({}):
 			# merge the passed parameters with the default
@@ -84,6 +78,37 @@ class Enforcement():
 				raise(APIException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
 
 		return results
+
+	def _delete(self, url_relative_path, params={}):
+		"""
+		Make an HTTP DELETE request to the specified URL
+		"""
+		params['customerKey'] = self.key
+
+		url = '{}/{}?{}'.format(self.base_url, url_relative_path, urllib.urlencode(params))
+
+		# build a DELETE request
+		# with help from http://stackoverflow.com/questions/17279416/cannot-get-delete-working-with-liburl2-with-python-for-rest-api
+		opener = urllib2.build_opener(urllib2.HTTPHandler)
+		req = urllib2.Request(url, None)
+		req.get_method = lambda: 'DELETE'
+		req.add_header('Content-Type', 'application/json')
+
+		response = None
+		try:
+			response = urllib2.urlopen(req)
+		except urllib2.HTTPError, err:
+			if err.code == 404:
+				response = False
+			else:
+				raise(APIException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
+		except Exception, err:
+			raise(APIException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
+
+		if response and response.getcode() == 204:
+			return True
+		else:
+			return False
 
 	def add_events(self, events): 
 		"""
@@ -137,8 +162,18 @@ class Enforcement():
 
 		return results
 
-	def delete_domains(self, domain):
+	def delete_domain(self, domain):
 		"""
 		DELETE /domains to delete a domain from the list
 		"""
-		pass
+		response = None
+		# did the user pass an ID or a domain?
+		m = re.search('^\d+$', domain)
+		if m:
+			# this is an ID
+			response = self._delete('domains/{}'.format(domain))
+		else:
+			# this is a domain name
+			response = self._delete('domains', { 'where[name]': domain })
+
+		return response
