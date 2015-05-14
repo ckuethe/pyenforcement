@@ -13,6 +13,15 @@ import urlparse
 class OpenDnsApiException(Exception): pass
 
 class Enforcement():
+	"""
+	Provide a simple interface to the OpenDNS Enforcement APIException
+
+	Initial with your customer key and use the following 3 methods to work with the API:
+
+	- Enforcement().list_domains()
+	- Enforcement().add_events(events)
+	- Enforcement().delete_domain(domain_name_or_id)
+	"""
 	def __init__(self, key, version=1.0):
 		self.key = key
 		self.version = version

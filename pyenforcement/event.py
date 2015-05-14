@@ -10,6 +10,9 @@ import re
 import api
 
 class GenericEvent():
+	"""
+	Event format used to submit events to the OpenDNS enforcement API
+	"""
 	def __init__(self):
 		self.device_id = None
 		self.device_version = None
@@ -63,7 +66,38 @@ class GenericEvent():
 		else:
 			return None
 
-	def _is_valid(self):
+	def required_properties(self):
+		"""
+		Return a list of the required properties for events to be accepted by the API
+		"""
+		return [
+			'device_id',
+			'device_version',
+			'event_time',
+			'alert_time',
+			'dst_domain',
+			'dst_url',
+			'protocol_version',
+			'provider_name'
+			]
+
+	def optional_properties(self):
+		"""
+		Return a list of optional properties for events
+		"""
+		return [
+			'dst_ip',
+			'event_severity',
+			'event_type',
+			'event_description',
+			'event_hash',
+			'file_name',
+			'file_hash',
+			'external_url',
+			'src',
+			]
+
+	def _is_valid(self, return_failed_properties=False):
 		"""
 		Check to see if this event is valid and conforms to the specification
 
@@ -81,18 +115,27 @@ class GenericEvent():
 			]
 
 		is_valid = True
+		failed_properties = []
 		for obj_property in required:
 			current_value = getattr(self, obj_property)
 			if not current_value or current_value == '':
-				print 'FAILED: {}\t{}'.format(obj_property, current_value)
+				failed_properties.append(obj_property)
 				is_valid = False
-				break
 
-		return is_valid
+		if return_failed_properties:
+			return return_failed_properties
+		else:
+			return is_valid
+
+	def get_missing_properties(self):
+		"""
+		Return a list of required properties do not have a value assigned
+		"""
+		return self._is_valid(return_failed_properties=True)
 
 	def to_json(self):
 		"""
-		Convert the event to a JSON
+		Convert the event to a JSON document
 		"""
 		properties = [
 			'device_id',
@@ -137,4 +180,10 @@ class GenericEvent():
 			else:
 				doc[api_name] = current_value
 
-		return json.loads(json.dumps(doc))
+		json_obj = None
+		try:
+			json_obj = json.loads(json.dumps(doc))
+		except Exception, err:
+			raise(api.OpenDnsApiException('Could not convert the event to a valid JSON document. Threw exception: {}'.format(err)))
+
+		return json_obj
