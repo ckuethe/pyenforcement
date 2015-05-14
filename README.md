@@ -4,7 +4,25 @@ PyEnforcement is a python module for accessing the [OpenDNS Security Platform AP
 
 ## Installation
 
-TBD, working on PyPI. For now, clone & go.
+PyEnforcement required the [dateutil module](https://pypi.python.org/pypi/python-dateutil). You can install it via:
+
+```
+pip install python-dateutil
+```
+
+Or:
+
+```
+pip install -r /path/to/requirements.txt
+```
+
+Once that's installed:
+
+```
+python setup.py install
+```
+
+...working on PyPI. For now, clone & go.
 
 ## Usage
 
