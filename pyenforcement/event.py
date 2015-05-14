@@ -171,9 +171,9 @@ class GenericEvent():
 			elif obj_property.endswith('_domain'):
 				current_value = self._validate_domain(current_value)
 			elif api_name == 'protocolVersion':
-				current_value = '1.0a'
+				current_value = '1.0a' # currently the only accepted value
 			elif api_name == 'providerName':
-				current_value = 'Security Platform'
+				current_value = 'Security Platform' # currently the only accepted value
 			
 			if not current_value or current_value == '':
 				continue # don't convert this property
