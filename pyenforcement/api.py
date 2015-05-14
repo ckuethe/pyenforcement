@@ -1,43 +1,137 @@
 # standard libraries
 import dateutil.parser
 import json
+import re
+import urllib
+import urllib2
 
 # 3rd party libraries
 
 # project libraries
+
+class OpenDnsApiException(Exception): pass
 
 class Enforcement():
 	def __init__(self, key, version=1.0):
 		self.key = key
 		self.version = version
 		self.event_time_format = '%Y-%m-%dT%H:%M:%S.%z'
+		self.base_url = 'https://s-platform.api.opendns.com/1.0'
 
-	def _make_http_request(self, url, params):
+	def _get(self, url_relative_path, **kwargs):
 		"""
-		Make an HTTP request to the specified URL
+		Make an HTTP GET request to the specified URL
 		"""
 		params = {
-#https://s-platform.api.opendns.com/1.0/events?&customerKey=1111-2222-3333-4444
-		}
-		pass
+			'customerKey': self.key,
+			'limit': 1,
+			}
+		headers = {
+			'Content-Type': 'application/json',
+			}
 
-	def add_domains(self, domains): 
+		if kwargs is not None:
+			# merge the passed parameters with the default
+			for k, v in kwargs.items():	params[k] = v
+
+		results = None
+		query_string = urllib.urlencode(params)
+		url = '{}/{}?{}'.format(self.base_url, url_relative_path, query_string)
+		req = None
+		try:
+			req = urllib.urlopen(url)
+		except Exception, err:
+			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
+
+		if req:
+			try:
+				results = json.load(req)
+			except Exception, err:
+				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
+
+		return results
+
+	def _post(self, url_relative_path, data, **kwargs):
+		"""
+		Make an HTTP POST request to the specified URL
+		"""
+		params = {
+			'customerKey': self.key,
+			'limit': 1,
+			}
+		headers = {
+			'Content-Type': 'application/json',
+			}
+
+		if kwargs is not None:
+			# merge the passed parameters with the default
+			for k, v in kwargs.items():	params[k] = v
+
+		results = None
+		query_string = urllib.urlencode(params)
+		url = '{}/{}?{}'.format(self.base_url, url_relative_path, query_string)
+		req = None
+		try:
+			req = urllib.urlopen(url)
+		except Exception, err:
+			raise(APIException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
+
+		if req:
+			try:
+				results = json.load(req)
+			except Exception, err:
+				raise(APIException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
+
+		return results
+
+
+	def add_domains(self, events): 
 		"""
 		POST /events to add a domain
+
+		events:
+			One or more events in the generic event format for the API. Enabled via api.Event()
 		"""
-		pass
-	def list_domains(self): 
+		if type(events) != type([]): events = [events]
+
+		data = '['
+		for i, event in enumerate(events):
+			if i != len(events-1):
+				data += '{},\n'.format(event.to_json())
+			else:
+				data += ']'
+
+		print data
+
+	def list_domains(self, page=1, get_all=False): 
 		"""
 		GET /domains to gather a list of domains already added
 		"""
-		pass
+		# /domains returns calls in pages of 200 domains
+		# do we need to get all of the pages?
+		if get_all:
+			more_pages = True
+			while more_pages:
+				response = self._get('domains', page=page)
+				print response
+
+				# are there more pages to request?
+				if response and response['next']:
+					page = response['next']
+					print "next page: {}".format(page)
+				else:
+					more_pages = False
+
+		else:
+			# get a specific page 
+			response = self._get('domains', page=page)
+			print response
 
 	def delete_domains(self, domain):
 		"""
 		DELETE /domains to delete a domain from the list
 		"""
 		pass
-
 
 class Event():
 	def __init__(self):
@@ -78,6 +172,20 @@ class Event():
 				result = None
 
 		return result
+
+	def _validate_domain(self, possible_domain):
+		"""
+		Check to see if the specified string is conforms to the domain spec, RFC3986 
+		"""
+		# domain regex from discussion at http://stackoverflow.com/questions/10306690/domain-name-validation-with-regex
+		# answer by Tim Groeneveld, http://stackoverflow.com/users/2143004/timgws
+		pattern = re.compile(r'^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$')
+		
+		m = pattern.search(possible_domain[0:255].strip())
+		if m:
+			return possible_domain
+		else:
+			return None
 
 	def _is_valid(self):
 		"""
@@ -140,6 +248,12 @@ class Event():
 			# make sure the value conforms to spec
 			if obj_property.endswith('_time'):
 				current_value = self._convert_timestamp(current_value)
+			elif obj_property.endswith('_domain'):
+				current_value = self._validate_domain(current_value)
+			elif api_name == 'protocolVersion':
+				current_value = '1.0a'
+			elif api_name == 'providerName':
+				current_value = 'Security Platform'
 			
 			if current_value and current_value != '':
 				continue # don't convert this property
