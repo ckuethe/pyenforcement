@@ -34,18 +34,18 @@ class Enforcement():
 			# merge the passed parameters with the default
 			for k, v in kwargs.items():	params[k] = v
 
-		results = None
 		query_string = urllib.urlencode(params)
 		url = '{}/{}?{}'.format(self.base_url, url_relative_path, query_string)
-		req = None
+		response = None
 		try:
-			req = urllib.urlopen(url)
+			response = urllib.urlopen(url)
 		except Exception, err:
 			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
 
-		if req:
+		results = None
+		if response:
 			try:
-				results = json.load(req)
+				results = json.load(response)
 			except Exception, err:
 				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
 
@@ -55,30 +55,31 @@ class Enforcement():
 		"""
 		Make an HTTP POST request to the specified URL
 		"""
-		params = {
+		auth_params = {
 			'customerKey': self.key,
-			'limit': 1,
 			}
 		headers = {
 			'Content-Type': 'application/json',
 			}
 
+		data = {}
 		if kwargs is not None:
 			# merge the passed parameters with the default
-			for k, v in kwargs.items():	params[k] = v
+			for k, v in kwargs.items():	data[k] = v
 
-		results = None
-		query_string = urllib.urlencode(params)
-		url = '{}/{}?{}'.format(self.base_url, url_relative_path, query_string)
-		req = None
+		post_data = urllib.urlencode(data)
+		url = '{}/{}?{}'.format(self.base_url, url_relative_path, urllib.urlencode(auth_params))
+		response = None
 		try:
-			req = urllib.urlopen(url)
+			req = urllib2.Request(url, post_data)
+			response = urllib2.urlopen(req)
 		except Exception, err:
 			raise(APIException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
 
-		if req:
+		results = None
+		if response:
 			try:
-				results = json.load(req)
+				results = json.load(response)
 			except Exception, err:
 				raise(APIException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
 
