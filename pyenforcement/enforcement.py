@@ -84,7 +84,7 @@ class Api():
 			try:
 				results = json.load(response)
 			except Exception, err:
-				raise(APIException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
+				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
 
 		return results
 
@@ -110,9 +110,9 @@ class Api():
 			if err.code == 404:
 				response = False
 			else:
-				raise(APIException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
+				raise(OpenDnsApiException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
 		except Exception, err:
-			raise(APIException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
+			raise(OpenDnsApiException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
 
 		if response and response.getcode() == 204:
 			return True
