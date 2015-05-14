@@ -13,7 +13,21 @@ Once you have the key, the module is as easy as:
 ```
 import pyenforcement
 
-opendns = pyenforcement.api.Enforcement('___MY_CUSTOMER_KEY___')
+opendns = pyenforcement.enforcement.Api('___MY_CUSTOMER_KEY___')
 currently_blocked_domains = opendns.list_domains()
 >>> ['groogle.com', 'foundthistoday.com', 'badbadstuff.net']
 ```
+
+## Methods
+
+The enforcement.Api() class exposes three main methods:
+
+1. .list_domains()
+2. .add_events(events)
+3. .delete(domain_name_or_id)
+
+Each of these is a direct python implement of the matching API endpoint.
+
+### .list_domains()
+### .add_events(events)
+### .delete(domain_name_or_id)

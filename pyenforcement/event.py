@@ -7,7 +7,7 @@ import re
 # 3rd party libraries
 
 # project libraries
-import api
+import enforcement
 
 class GenericEvent():
 	"""
@@ -184,6 +184,6 @@ class GenericEvent():
 		try:
 			json_obj = json.loads(json.dumps(doc))
 		except Exception, err:
-			raise(api.OpenDnsApiException('Could not convert the event to a valid JSON document. Threw exception: {}'.format(err)))
+			raise(enforcement.OpenDnsApiException('Could not convert the event to a valid JSON document. Threw exception: {}'.format(err)))
 
 		return json_obj

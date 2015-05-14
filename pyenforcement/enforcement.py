@@ -12,7 +12,7 @@ import urlparse
 
 class OpenDnsApiException(Exception): pass
 
-class Enforcement():
+class Api():
 	"""
 	Provide a simple interface to the OpenDNS Enforcement APIException
 
