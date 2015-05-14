@@ -4,6 +4,7 @@ import json
 import re
 import urllib
 import urllib2
+import urlparse
 
 # 3rd party libraries
 
@@ -62,17 +63,16 @@ class Enforcement():
 			'Content-Type': 'application/json',
 			}
 
-		data = {}
-		if kwargs is not None:
+		if kwargs is not None and type(data) == type({}):
 			# merge the passed parameters with the default
 			for k, v in kwargs.items():	data[k] = v
 
-		post_data = urllib.urlencode(data)
 		url = '{}/{}?{}'.format(self.base_url, url_relative_path, urllib.urlencode(auth_params))
 		response = None
 		try:
-			req = urllib2.Request(url, post_data)
-			response = urllib2.urlopen(req)
+			req = urllib2.Request(url)
+			req.add_header('Content-Type', 'application/json')
+			response = urllib2.urlopen(req, json.dumps(data))
 		except Exception, err:
 			raise(APIException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
 
@@ -85,8 +85,7 @@ class Enforcement():
 
 		return results
 
-
-	def add_domains(self, events): 
+	def add_events(self, events): 
 		"""
 		POST /events to add a domain
 
@@ -95,30 +94,37 @@ class Enforcement():
 		"""
 		if type(events) != type([]): events = [events]
 
-		data = '['
-		for i, event in enumerate(events):
-			if i != len(events-1):
-				data += '{},\n'.format(event.to_json())
-			else:
-				data += ']'
+		data = []
+		for event in events: data.append(event.to_json())
 
-		print data
+		response = self._post('events', data)
+		if response and response.has_key('id'):
+			return response['id']
+		else:
+			return None
 
 	def list_domains(self, page=1, get_all=False): 
 		"""
 		GET /domains to gather a list of domains already added
 		"""
 		# /domains returns calls in pages of 200 domains
+		# each domain is returned in a dict of:
+		# 	{u'id': 3238369, u'name': u'groogle.com'}
+		results = {}
+
 		# do we need to get all of the pages?
 		if get_all:
 			more_pages = True
 			while more_pages:
 				response = self._get('domains', page=page)
-				print response
+				for entry in response['data']:
+					results[entry['name']] = entry['id']
 
 				# are there more pages to request?
 				if response and response['next']:
-					page = response['next']
+					# the next value is the complete URL of the next page, pull out just the page number
+					next_url = urlparse.urlparse(response['next'])
+					page = urlparse.parse_qs(next_url.query)['page'][0]
 					print "next page: {}".format(page)
 				else:
 					more_pages = False
@@ -126,7 +132,10 @@ class Enforcement():
 		else:
 			# get a specific page 
 			response = self._get('domains', page=page)
-			print response
+			for entry in response['data']:
+					results[entry['name']] = entry['id']
+
+		return results
 
 	def delete_domains(self, domain):
 		"""

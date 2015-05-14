@@ -1,4 +1,5 @@
 # standard libraries
+import datetime
 import dateutil.parser
 import json
 import re
@@ -17,7 +18,7 @@ class GenericEvent():
 		self.dst_domain = None
 		self.dst_url = None
 		self.protocol_version = '1.0a'
-		self.provider_name = None
+		self.provider_name = 'Security Platform'
 		self.dst_ip = None
 		self.event_severity = None
 		self.event_type = None
@@ -82,7 +83,8 @@ class GenericEvent():
 		is_valid = True
 		for obj_property in required:
 			current_value = getattr(self, obj_property)
-			if current_value and current_value != '':
+			if not current_value or current_value == '':
+				print 'FAILED: {}\t{}'.format(obj_property, current_value)
 				is_valid = False
 				break
 
@@ -130,9 +132,9 @@ class GenericEvent():
 			elif api_name == 'providerName':
 				current_value = 'Security Platform'
 			
-			if current_value and current_value != '':
+			if not current_value or current_value == '':
 				continue # don't convert this property
 			else:
 				doc[api_name] = current_value
 
-		return json.dumps(doc)
+		return json.loads(json.dumps(doc))
