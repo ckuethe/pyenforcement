@@ -52,6 +52,40 @@ for domain, api_id in current_list.items():
 
 Add an event or list of events to be tracked. The domains implicated in the event (event.dst_domain) will be blocked for your organization.
 
+Returns a transaction ID if successful. *None* if not.
+
+```python
+import pyenforcement
+
+opendns = pyenforcement.enforcement.Api('___MY_CUSTOMER_KEY___')
+
+e = pyenforcement.event.GenericEvent()
+e.device_id = 'pyenforcement-testing-ba6a59f4-e692-4724-ba36-c28132c761de'
+e.device_version = '0.01'
+e.event_time = '2015-05-14T09:30:26.0Z'
+e.alert_time = '2015-05-14T09:30:26.0Z'
+e.dst_domain = 'groogle.com'
+e.dst_url = 'https://www.groogle.com/finance?q=NASDAQ:AAPL'
+
+print opendns.add_events(e)
+
+>>> u'0a3dd8c3-659c-4889-9b97-c2dc26b5d0f1'
+```
+
+Multiple events can be added with one method call by using a list of pyenforcement.event.GenericEvent objects.
+
 ### .delete(domain_name_or_id)
 
 Delete a domain from your organizations list. A domain name or the API's ID number can be passed to the method.
+
+Return *True* if successful, *False* if not.
+
+```python
+import pyenforcement
+
+opendns = pyenforcement.enforcement.Api('___MY_CUSTOMER_KEY___')
+
+print opendns.delete_domain('groogle.com')
+
+>>> True
+```
