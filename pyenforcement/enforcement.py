@@ -34,7 +34,6 @@ class Api():
 		"""
 		params = {
 			'customerKey': self.key,
-			'limit': 1,
 			}
 
 		if kwargs is not None:
