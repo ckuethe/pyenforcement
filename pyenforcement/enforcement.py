@@ -154,9 +154,9 @@ class Api():
 					results[entry['name']] = entry['id']
 
 				# are there more pages to request?
-				if response and response['next']:
+				if response and response['meta']['next']:
 					# the next value is the complete URL of the next page, pull out just the page number
-					next_url = urlparse.urlparse(response['next'])
+					next_url = urlparse.urlparse(response['meta']['next'])
 					page = urlparse.parse_qs(next_url.query)['page'][0]
 					print "next page: {}".format(page)
 				else:
