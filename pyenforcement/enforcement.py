@@ -42,6 +42,7 @@ class Api():
 			for k, v in kwargs.items():	params[k] = v
 
 		results = None
+		resp = None
 		try:
 			resp = requests.get('{}/{}'.format(self.base_url, url_relative_path), params=params)
 			if resp.ok:
@@ -49,6 +50,8 @@ class Api():
 					results = resp.json()
 				except Exception, err:
 					raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(resp.url, err)))
+			else:
+				raise(OpenDnsApiException('Unsuccessful request to URL [{}]. HTTP status {}'.format(resp.url, resp.status_code)))
 		except Exception, err:
 			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(resp.url, err)))
 
