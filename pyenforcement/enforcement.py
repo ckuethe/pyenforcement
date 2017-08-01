@@ -158,7 +158,7 @@ class Api():
 					# the next value is the complete URL of the next page, pull out just the page number
 					next_url = urlparse.urlparse(response['meta']['next'])
 					page = urlparse.parse_qs(next_url.query)['page'][0]
-					print "next page: {}".format(page)
+					#print "next page: {}".format(page)
 				else:
 					more_pages = False
 
