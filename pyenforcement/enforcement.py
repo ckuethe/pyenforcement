@@ -2,8 +2,6 @@
 import dateutil.parser
 import json
 import re
-import urllib
-import urllib2
 import urlparse
 
 # 3rd party libraries
