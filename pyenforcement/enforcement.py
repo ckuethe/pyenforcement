@@ -90,32 +90,21 @@ class Api():
 		"""
 		Make an HTTP DELETE request to the specified URL
 		"""
+
 		params['customerKey'] = self.key
-
-		url = '{}/{}?{}'.format(self.base_url, url_relative_path, urllib.urlencode(params))
-
-		# build a DELETE request
-		# with help from http://stackoverflow.com/questions/17279416/cannot-get-delete-working-with-liburl2-with-python-for-rest-api
-		opener = urllib2.build_opener(urllib2.HTTPHandler)
-		req = urllib2.Request(url, None)
-		req.get_method = lambda: 'DELETE'
-		req.add_header('Content-Type', 'application/json')
-
-		response = None
+		url = '{}/{}'.format(self.base_url, url_relative_path)
+		headers = {'Content-Type': 'application/json'}
+		resp = None
 		try:
-			response = urllib2.urlopen(req)
-		except urllib2.HTTPError, err:
-			if err.code == 404:
-				response = False
-			else:
-				raise(OpenDnsApiException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
+			resp = requests.delete(url, headers=headers, params=params)
+			if resp.status_code == 204:
+				return True
+			elif resp.status_code == 404:
+				return False
+			print resp.url
+			raise(OpenDnsApiException('Server Error {}'.format(resp.json())))
 		except Exception, err:
 			raise(OpenDnsApiException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
-
-		if response and response.getcode() == 204:
-			return True
-		else:
-			return False
 
 	def add_events(self, events): 
 		"""
