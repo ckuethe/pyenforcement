@@ -7,6 +7,7 @@ import urllib2
 import urlparse
 
 # 3rd party libraries
+import requests
 
 # project libraries
 
@@ -22,7 +23,7 @@ class Api():
 	- Enforcement().add_events(events)
 	- Enforcement().delete_domain(domain_name_or_id)
 	"""
-	def __init__(self, key, version=1.0):
+	def __init__(self, key, version=1.1):
 		self.key = key
 		self.version = version
 		self.event_time_format = '%Y-%m-%dT%H:%M:%S.%z'
@@ -40,20 +41,16 @@ class Api():
 			# merge the passed parameters with the default
 			for k, v in kwargs.items():	params[k] = v
 
-		query_string = urllib.urlencode(params)
-		url = '{}/{}?{}'.format(self.base_url, url_relative_path, query_string)
-		response = None
-		try:
-			response = urllib.urlopen(url)
-		except Exception, err:
-			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
-
 		results = None
-		if response:
-			try:
-				results = json.load(response)
-			except Exception, err:
-				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
+		try:
+			resp = requests.get('{}/{}'.format(self.base_url, url_relative_path), params=params)
+			if resp.ok:
+				try:
+					results = resp.json()
+				except Exception, err:
+					raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(resp.url, err)))
+		except Exception, err:
+			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(resp.url, err)))
 
 		return results
 
