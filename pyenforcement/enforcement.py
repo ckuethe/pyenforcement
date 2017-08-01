@@ -76,7 +76,7 @@ class Api():
 			req.add_header('Content-Type', 'application/json')
 			response = urllib2.urlopen(req, json.dumps(data))
 		except Exception, err:
-			raise(APIException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
+			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
 
 		results = None
 		if response:
