@@ -69,21 +69,20 @@ class Api():
 			# merge the passed parameters with the default
 			for k, v in kwargs.items():	data[k] = v
 
-		url = '{}/{}?{}'.format(self.base_url, url_relative_path, urllib.urlencode(auth_params))
-		response = None
-		try:
-			req = urllib2.Request(url)
-			req.add_header('Content-Type', 'application/json')
-			response = urllib2.urlopen(req, json.dumps(data))
-		except Exception, err:
-			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(url, err)))
-
 		results = None
-		if response:
+		resp = None
+		url = '{}/{}'.format(self.base_url, url_relative_path)
+		headers = {'Content-Type': 'application/json'}
+		try:
+			resp = requests.post(url, headers=headers, params=auth_params, data=json.dumps(data))
 			try:
-				results = json.load(response)
+				results = resp.json()
 			except Exception, err:
-				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(url, err)))
+				raise(OpenDnsApiException('Could not convert the response from URL [{}] to JSON. Threw exception: {}'.format(resp.url, err)))
+			if resp.ok == False:
+				raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Server message: {}'.format(resp.url, results)))
+		except Exception, err:
+			raise(OpenDnsApiException('Unsuccessful request to URL [{}]. Threw exception: {}'.format(resp.url, err)))
 
 		return results
 
