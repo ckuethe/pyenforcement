@@ -103,20 +103,10 @@ class GenericEvent():
 
 		Details available at http://s-platform.opendns.com/#eventformat
 		"""
-		required = [
-			'device_id',
-			'device_version',
-			'event_time',
-			'alert_time',
-			'dst_domain',
-			'dst_url',
-			'protocol_version',
-			'provider_name',
-			]
 
 		is_valid = True
 		failed_properties = []
-		for obj_property in required:
+		for obj_property in self.required_properties():
 			current_value = getattr(self, obj_property)
 			if not current_value or current_value == '':
 				failed_properties.append(obj_property)
@@ -137,25 +127,7 @@ class GenericEvent():
 		"""
 		Convert the event to a JSON document
 		"""
-		properties = [
-			'device_id',
-			'device_version',
-			'event_time',
-			'alert_time',
-			'dst_domain',
-			'dst_url',
-			'protocol_version',
-			'provider_name',
-			'dst_ip',
-			'event_severity',
-			'event_type',
-			'event_description',
-			'event_hash',
-			'file_name',
-			'file_hash',
-			'external_url',
-			'src',
-			]
+		properties = self.required_properties() + self.optional_properties()
 
 		if not self._is_valid(): return None
 
