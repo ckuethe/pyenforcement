@@ -30,6 +30,7 @@ class GenericEvent():
 		self.file_name = None
 		self.file_hash = None
 		self.external_url = None
+		self.disable_safeguards = None
 		self.src = None
 
 	def _convert_timestamp(self, timestamp):
@@ -96,6 +97,7 @@ class GenericEvent():
 			'file_hash',
 			'external_url',
 			'src',
+			'disable_safeguards',
 			]
 
 	def _is_valid(self, return_failed_properties=False):
@@ -135,6 +137,7 @@ class GenericEvent():
 		doc = {}
 		for obj_property in properties:			
 			# make sure we use the API name and not the pythonic one
+			# XXX breaks with more than two words making up the name
 			api_name = '{}{}'.format(obj_property.split('_')[0], obj_property.split('_')[-1].title())
 
 			current_value = getattr(self, obj_property)
@@ -147,6 +150,10 @@ class GenericEvent():
 				current_value = '1.0a' # currently the only accepted value
 			elif api_name == 'providerName':
 				current_value = 'Security Platform' # currently the only accepted value
+			elif api_name == 'disableSafeguards':
+				api_name = 'disableDstSafeguards' # because of the API name formatter
+				if current_value != True:
+					current_value = None
 			
 			if not current_value or current_value == '':
 				continue # don't convert this property
