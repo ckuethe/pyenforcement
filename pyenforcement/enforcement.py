@@ -99,7 +99,6 @@ class Api():
 				return True
 			elif resp.status_code == 404:
 				return False
-			print resp.url
 			raise(OpenDnsApiException('Server Error {}'.format(resp.json())))
 		except Exception, err:
 			raise(OpenDnsApiException('Could not delete the specified domain(s). Threw exception: {}'.format(err)))
