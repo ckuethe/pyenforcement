@@ -57,13 +57,12 @@ class GenericEvent():
 		"""
 		Check to see if the specified string is conforms to the domain spec, RFC3986 
 		"""
-		# XXX Breaks with certain domains seen in the wild. Will review later
 		# domain regex from discussion at http://stackoverflow.com/questions/10306690/domain-name-validation-with-regex
-		# answer by Tim Groeneveld, http://stackoverflow.com/users/2143004/timgws
-		pattern = re.compile(r'^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\.(xn--)?([a-z0-9\-]{1,61}|[a-z0-9-]{1,30}\.[a-z]{2,})$')
+		# answer by Andre Domaszek, https://stackoverflow.com/a/41193739
+		pattern = re.compile(r'^(?=.{1,253}\.?$)(?:(?!-|[^.]+_)[A-Za-z0-9-_]{1,63}(?<!-)(?:\.|$)){2,}$')
 		
-		m = pattern.search(possible_domain[0:255].strip())
-		if True or m: # XXX make this always succeed
+		m = pattern.search(possible_domain.strip())
+		if m:
 			return possible_domain
 		else:
 			return None
